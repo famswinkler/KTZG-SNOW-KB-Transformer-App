@@ -1,0 +1,127 @@
+<div><span style="font-family: arial, helvetica, sans-serif; font-size: 12pt;">[BILD/LOGO 90px breit]</span></div>
+<div>&nbsp;</div>
+<div>
+<div class="mce-toc">
+<h2>Inhaltsverzeichnis</h2>
+<ul>
+<li><a href="#mcetoc_1i1p85pa117" rel="nofollow">Problem / Frage / Beschreibung</a></li>
+<li><a href="#mcetoc_1id282s9oe" rel="nofollow">Anleitung / L&ouml;sung</a></li>
+<li><a href="#mcetoc_1id282s9of" rel="nofollow">Zus&auml;tzliche Informationen</a>
+<ul>
+<li><a href="#mcetoc_1inbfo8j12" rel="nofollow">Weitere hilfreiche Links / Dokumente:</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<span style="font-family: arial, helvetica, sans-serif; font-size: 14pt;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+<div>&nbsp;</div>
+<h1 id="mcetoc_1i1p85pa117" style="color: dimgrey; background-color: seashell; border-color: #f5c6cb; padding: .75rem 1.25rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: .25rem; font-size: 10pt; font-family: arial, helvetica, sans-serif;"><span style="font-size: 18pt; font-family: arial, helvetica, sans-serif;"><strong>Problem / Frage / Beschreibung</strong></span></h1>
+<p><em><span style="font-family: arial, helvetica, sans-serif; font-size: 12pt;">Auf die Bilder klicken, um sie zu vergr&ouml;ssern.</span></em></p>
+<table style="border-collapse: collapse; width: 100%; border-style: none;" border="1">
+<tbody>
+<tr style="border-color: #ced4d9; border-style: solid;">
+<td style="width: 5%; border-style: none;">
+<p style="text-align: center;">&nbsp;</p>
+</td>
+<td style="width: 35%; border-style: none;">
+<p style="text-align: center;">&nbsp;</p>
+<p style="text-align: center;"><span style="font-family: arial, helvetica, sans-serif; font-size: 12pt;">[Screenshot 200px breit + zentriert]</span></p>
+<p style="text-align: center;">&nbsp;</p>
+</td>
+<td style="width: 5%; border-style: none;">
+<p>&nbsp;</p>
+</td>
+<td style="width: 50%; border-style: none;">
+<p>&nbsp;</p>
+<p><span style="font-family: arial, helvetica, sans-serif; font-size: 12pt;">[Beschreibung]</span></p>
+<p>&nbsp;</p>
+</td>
+<td style="width: 5%; border-style: none;">
+<p>&nbsp;</p>
+</td>
+</tr>
+<tr style="border-color: #ced4d9; border-style: solid;">
+<td style="width: 5%; border-style: none;">
+<p style="text-align: center;">&nbsp;</p>
+</td>
+<td style="width: 35%; border-style: none;">
+<p style="text-align: center;">&nbsp;</p>
+<p style="text-align: center;"><span style="font-family: arial, helvetica, sans-serif; font-size: 12pt;">[Screenshot 200px breit + zentriert]</span></p>
+<p style="text-align: center;">&nbsp;</p>
+</td>
+<td style="width: 5%; border-style: none;">
+<p>&nbsp;</p>
+</td>
+<td style="width: 50%; border-style: none;">
+<p>&nbsp;</p>
+<p><span style="font-family: arial, helvetica, sans-serif; font-size: 12pt;">[Beschreibung]</span></p>
+<p>&nbsp;</p>
+</td>
+<td style="width: 5%; border-style: none;">
+<p>&nbsp;</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<h1 id="mcetoc_1id282s9oe" style="color: dimgrey; background-color: honeydew; border-color: #c3e6cb; padding: .75rem 1.25rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: .25rem; font-size: 10pt; font-family: arial, helvetica, sans-serif;"><span style="font-family: arial, helvetica, sans-serif; font-size: 18pt;"><strong>Anleitung / L&ouml;sung</strong></span></h1>
+<p><em><span style="font-family: arial, helvetica, sans-serif; font-size: 12pt;">Klicken Sie auf die Titel, um sie aufzuklappen, und auf die Bilder, um sie zu vergr&ouml;ssern.</span></em></p>
+<details class="mce-accordion" open="open">
+<summary><span style="font-family: arial, helvetica, sans-serif; font-size: 14pt;">Untertitel</span></summary>
+<p><span style="font-family: arial, helvetica, sans-serif; font-size: 12pt;">[Bild hier einf&uuml;gen]</span></p>
+<p><span style="font-family: arial, helvetica, sans-serif; font-size: 12pt;">Accordion-Textk&ouml;rper ...</span></p>
+</details>
+<p>&nbsp;</p>
+<table style="border-collapse: collapse; width: 100%; border-style: none;" border="1">
+<tbody>
+<tr style="border-color: #ced4d9; border-style: solid;">
+<td style="width: 5%; border-style: none;">
+<p style="text-align: center;">&nbsp;</p>
+</td>
+<td style="width: 35%; border-style: none;">
+<p style="text-align: center;">&nbsp;</p>
+<p style="text-align: center;"><span style="font-family: arial, helvetica, sans-serif; font-size: 12pt;">[Screenshot 200px breit + zentriert]</span></p>
+<p style="text-align: center;">&nbsp;</p>
+</td>
+<td style="width: 5%; border-style: none;">
+<p>&nbsp;</p>
+</td>
+<td style="width: 50%; border-style: none;">
+<p>&nbsp;</p>
+<p><span style="font-family: arial, helvetica, sans-serif; font-size: 12pt;">[Beschreibung]</span></p>
+<p>&nbsp;</p>
+</td>
+<td style="width: 5%; border-style: none;">
+<p>&nbsp;</p>
+</td>
+</tr>
+<tr style="border-color: #ced4d9; border-style: solid;">
+<td style="width: 5%; border-style: none;">
+<p style="text-align: center;">&nbsp;</p>
+</td>
+<td style="width: 35%; border-style: none;">
+<p style="text-align: center;">&nbsp;</p>
+<p style="text-align: center;"><span style="font-family: arial, helvetica, sans-serif; font-size: 12pt;">[Screenshot 200px breit + zentriert]</span></p>
+<p style="text-align: center;">&nbsp;</p>
+</td>
+<td style="width: 5%; border-style: none;">
+<p>&nbsp;</p>
+</td>
+<td style="width: 50%; border-style: none;">
+<p>&nbsp;</p>
+<p><span style="font-family: arial, helvetica, sans-serif; font-size: 12pt;">[Beschreibung]</span></p>
+<p>&nbsp;</p>
+</td>
+<td style="width: 5%; border-style: none;">
+<p>&nbsp;</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+<h1 id="mcetoc_1id282s9of" style="color: dimgrey; background-color: whitesmoke; padding: 0.75rem 1.25rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: 0.25rem; font-size: 10pt; font-family: arial, helvetica, sans-serif;"><span id="mce_23"></span><span style="font-family: arial, helvetica, sans-serif; font-size: 18pt;"><strong>Zus&auml;tzliche Informationen</strong></span></h1>
+<h2 id="mcetoc_1inbfo8j12"><span style="font-family: arial, helvetica, sans-serif; font-size: 12pt;">Weitere hilfreiche Links / Dokumente:</span></h2>
+<ul style="list-style-position: inside;">
+<li style="font-family: arial, helvetica, sans-serif; font-size: 12pt;">LINK</li>
+</ul>
+<p>&nbsp;</p>
