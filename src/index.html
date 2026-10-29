@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KTZG SNOW KB-Transformer</title>
+<style>
+  :root {
+    --bg: #f4f6f8; --card: #fff; --text: #1f2933; --muted: #616e7c; --line: #d9dee3;
+    --accent: #1f6f54; --accent-soft: #e5f3ed; --warn-bg: #fff6e0; --warn: #8a5a00;
+    --err-bg: #fdecec; --err: #9b1c1c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 "Segoe UI", Arial, sans-serif; }
+  header { background: var(--accent); color: #fff; padding: 12px 20px; display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+  header span { opacity: .85; font-size: 13px; }
+  main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 16px; align-items: start; }
+  @media (max-width: 1100px) { main { grid-template-columns: 1fr; } .out { position: static !important; height: auto !important; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; margin-bottom: 16px; }
+  .card > h2 { margin: 0 0 10px; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+  .step { display: inline-flex; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12px; align-items: center; justify-content: center; }
+  button, .btn { font: inherit; border: 1px solid var(--line); background: #fff; color: var(--text); border-radius: 6px; padding: 5px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+  button:hover, .btn:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.small { padding: 2px 7px; font-size: 12px; }
+  button:disabled { opacity: .5; cursor: default; }
+  input[type=text], input[type=number], select, textarea { font: inherit; border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; background: #fff; color: var(--text); }
+  input[type=text], textarea { width: 100%; }
+  label { cursor: pointer; }
+  .row-flex { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .muted { color: var(--muted); font-size: 12px; }
+  .drop { border: 2px dashed var(--line); border-radius: 8px; padding: 14px; text-align: center; color: var(--muted); }
+  .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+  .paste { min-height: 110px; max-height: 260px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; padding: 8px; margin-top: 10px; background: #fff; }
+  .paste:empty::before { content: attr(data-placeholder); color: var(--muted); }
+  .paste img { max-width: 160px; }
+  .msg { border-radius: 6px; padding: 8px 10px; margin-top: 10px; font-size: 13px; }
+  .msg.info { background: var(--accent-soft); }
+  .msg.warn { background: var(--warn-bg); color: var(--warn); }
+  .msg.err { background: var(--err-bg); color: var(--err); }
+  .msg ul { margin: 4px 0 0 18px; padding: 0; }
+  .section { border: 1px solid var(--line); border-radius: 8px; margin-top: 12px; }
+  .section-head { padding: 8px 10px; border-radius: 8px 8px 0 0; display: flex; gap: 8px; align-items: center; }
+  .section-head input { font-weight: 600; max-width: 340px; }
+  .sec-beschreibung .section-head { background: seashell; }
+  .sec-anleitung .section-head { background: honeydew; }
+  .sec-zusatz .section-head { background: whitesmoke; }
+  .section-body { padding: 10px; }
+  .r { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 10px; border: 1px solid var(--line); border-radius: 6px; padding: 8px; margin-bottom: 8px; background: #fff; }
+  .r.dragover { outline: 2px solid var(--accent); }
+  .imgbox { width: 150px; min-height: 90px; border: 1px dashed var(--line); border-radius: 4px; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 12px; color: var(--muted); overflow: hidden; background: #fafbfc; }
+  .imgbox img { max-width: 100%; max-height: 140px; display: block; }
+  .imgbox.missing { border-color: #e0a800; color: var(--warn); background: var(--warn-bg); }
+  .imgbtns { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+  .rt { min-height: 70px; border: 1px solid var(--line); border-radius: 4px; padding: 4px 8px; outline: none; }
+  .rt:focus { border-color: var(--accent); }
+  .rt p { margin: 4px 0; }
+  .rt ol, .rt ul { margin: 4px 0; padding-left: 22px; }
+  .toolbar { display: flex; gap: 3px; margin: 4px 0; flex-wrap: wrap; }
+  .toolbar button { padding: 1px 7px; font-size: 12px; }
+  .ractions { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; margin-top: 6px; }
+  .ractions select { font-size: 12px; padding: 2px 4px; }
+  .sub { margin-bottom: 4px; font-size: 13px; }
+  .logo-thumb { max-width: 90px; max-height: 70px; border: 1px solid var(--line); border-radius: 4px; }
+  .out { position: sticky; top: 16px; height: calc(100vh - 32px); display: flex; flex-direction: column; }
+  .out .card { display: flex; flex-direction: column; flex: 1; margin: 0; min-height: 0; }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+  .tabs button { border: none; border-bottom: 3px solid transparent; border-radius: 0; background: none; padding: 6px 10px; }
+  .tabs button.active { border-bottom-color: var(--accent); font-weight: 600; }
+  iframe { flex: 1; width: 100%; border: 1px solid var(--line); border-radius: 6px; background: #fff; min-height: 400px; }
+  #code { flex: 1; font: 12px/1.4 Consolas, monospace; white-space: pre; min-height: 400px; resize: none; }
+  .hidden { display: none !important; }
+  details.settings summary { cursor: pointer; font-weight: 600; }
+  .grid2 { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; align-items: center; margin-top: 10px; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1f2933; color: #fff; padding: 8px 14px; border-radius: 6px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 10; }
+  .toast.show { opacity: .95; }
+</style>
+</head>
+<body>
+<header>
+  <h1>KTZG SNOW KB-Transformer</h1>
+  <span>Anleitung (Word, PDF, Text) &rarr; ServiceNow-Wissensartikel (HTML) gem&auml;ss KTZG-Template &middot; l&auml;uft komplett lokal</span>
+</header>
+
+<main>
+<div>
+  <div class="card">
+    <h2><span class="step">1</span> Quelle</h2>
+    <div class="drop" id="drop">
+      Word- (.docx), PDF-, Text- oder HTML-Datei hierher ziehen oder
+      <label class="btn" style="margin-left:4px">Datei w&auml;hlen<input type="file" id="file" accept=".docx,.pdf,.txt,.html,.htm" hidden></label>
+      <div class="muted" id="fileName" style="margin-top:6px"></div>
+    </div>
+    <div class="paste" id="paste" contenteditable="true" data-placeholder="… oder Text / Inhalt hier einf&uuml;gen (Strg+V), z.B. aus Word, Outlook, einer Webseite oder einen Screenshot."></div>
+    <div class="row-flex" style="margin-top:10px">
+      <span>Bild-Zuordnung:</span>
+      <label><input type="radio" name="order" value="before" checked> Text steht <b>vor</b> dem Bild</label>
+      <label><input type="radio" name="order" value="after"> Text steht <b>nach</b> dem Bild</label>
+    </div>
+    <div class="row-flex" style="margin-top:10px">
+      <button class="primary" id="convert">Umwandeln</button>
+      <button id="blank">Leere Vorlage</button>
+      <button id="clearSrc">Quelle leeren</button>
+    </div>
+    <div id="msgs"></div>
+  </div>
+
+  <div class="card" id="editor">
+    <h2><span class="step">2</span> Bearbeiten</h2>
+    <div class="grid2" style="margin-top:0">
+      <span>Titel</span>
+      <div class="row-flex" style="flex-wrap:nowrap"><input type="text" id="title" placeholder="Titel des Artikels (Feld &laquo;Kurzbeschreibung&raquo; in ServiceNow)"><button id="copyTitle" title="Titel kopieren">Kopieren</button></div>
+      <span>Logo</span>
+      <div class="row-flex">
+        <img id="logoThumb" class="logo-thumb hidden" alt="Logo">
+        <label class="btn">Logo w&auml;hlen<input type="file" id="logoFile" accept="image/*" hidden></label>
+        <button id="logoUrl">URL</button>
+        <button id="logoRemove">Entfernen</button>
+        <select id="logoLib"><option value="">Gespeicherte Logos …</option></select>
+        <button id="logoSave" title="Aktuelles Logo im Browser speichern">Speichern</button>
+        <button id="logoDelete" title="Gew&auml;hltes gespeichertes Logo l&ouml;schen">L&ouml;schen</button>
+      </div>
+    </div>
+    <div id="sections"></div>
+  </div>
+
+  <div class="card">
+    <details class="settings">
+      <summary>Einstellungen</summary>
+      <div class="grid2">
+        <span>Bildbreite im Artikel</span><span><input type="number" id="setImgW" min="50" max="800" style="width:80px"> px</span>
+        <span>Logo-Breite</span><span><input type="number" id="setLogoW" min="20" max="400" style="width:80px"> px</span>
+        <span>Bilder verkleinern auf max.</span><span><input type="number" id="setMaxPx" min="200" max="4000" style="width:80px"> px Breite (f&uuml;r die Vergr&ouml;sserung)</span>
+        <span>Bilder</span>
+        <span><select id="setImgMode">
+          <option value="embed">direkt ins HTML einbetten (Base64)</option>
+          <option value="placeholder">als Platzhalter [Bild n] (Bilder separat hochladen)</option>
+        </select></span>
+        <span>Untertitel</span><span><label><input type="checkbox" id="setAccordion"> als aufklappbares Akkordeon ausgeben</label></span>
+        <span>Schreibweise</span><span><label><input type="checkbox" id="setSs"> &laquo;&szlig;&raquo; durch &laquo;ss&raquo; ersetzen (Schweizer Schreibweise)</label></span>
+      </div>
+    </details>
+  </div>
+</div>
+
+<div class="out">
+  <div class="card">
+    <h2><span class="step">3</span> Ergebnis</h2>
+    <div class="row-flex" style="margin-bottom:8px">
+      <button class="primary" id="copyHtml">HTML-Code kopieren</button>
+      <button id="copyRich" title="F&uuml;r das direkte Einf&uuml;gen im ServiceNow-Editor (ohne Quellcode-Ansicht)">Formatiert kopieren</button>
+      <button id="saveHtml">Als .html speichern</button>
+      <button id="dlImages">Bilder herunterladen</button>
+    </div>
+    <div class="tabs">
+      <button class="active" data-tab="preview">Vorschau</button>
+      <button data-tab="code">HTML-Code</button>
+    </div>
+    <iframe id="preview" title="Vorschau"></iframe>
+    <textarea id="code" class="hidden" readonly spellcheck="false"></textarea>
+    <div class="muted" id="sizeInfo" style="margin-top:6px"></div>
+  </div>
+</div>
+</main>
+<div class="toast" id="toast"></div>
+
+<!-- INLINE:vendor/mammoth.browser.min.js -->
+<!-- INLINE:vendor/pdf.worker.min.js -->
+<!-- INLINE:vendor/pdf.min.js -->
+<script>
+'use strict';
+/* ============================================================
+   KTZG SNOW KB-Transformer
+   Quelle (docx/pdf/txt/html/Zwischenablage) -> Bausteine -> Modell -> HTML gem. Template
+   ============================================================ */
+
+const $ = (s) => document.querySelector(s);
+const FONT = 'font-family: arial, helvetica, sans-serif;';
+const SECTION_KEYS = ['beschreibung', 'anleitung', 'zusatz'];
+const SECTION_DEFAULTS = { beschreibung: 'Beschreibung', anleitung: 'Anleitung', zusatz: 'Zusätzliche Informationen' };
+const SECTION_STYLE = {
+  beschreibung: 'color: dimgrey; background-color: seashell; border-color: #f5c6cb; padding: .75rem 1.25rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: .25rem; font-size: 10pt; font-family: arial, helvetica, sans-serif;',
+  anleitung: 'color: dimgrey; background-color: honeydew; border-color: #c3e6cb; padding: .75rem 1.25rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: .25rem; font-size: 10pt; font-family: arial, helvetica, sans-serif;',
+  zusatz: 'color: dimgrey; background-color: whitesmoke; padding: 0.75rem 1.25rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: 0.25rem; font-size: 10pt; font-family: arial, helvetica, sans-serif;'
+};
+const SECTION_RX = {
+  beschreibung: /^(problem|frage|beschreibung|ausgangslage|einleitung|einführung|allgemein|übersicht|uebersicht|zweck|ziel|hintergrund|symptom|situation|fehlerbild|ursache|voraussetzung)/i,
+  anleitung: /^(anleitung|lösung|loesung|vorgehen|vorgehensweise|schritte\b|schritt-für-schritt|durchführung|umsetzung|workaround|so geht)/i,
+  zusatz: /^(zusätzlich|zusaetzlich|weitere|links\b|hinweis|siehe auch|referenz|quellen|dokumente|anhang|kontakt|support\b|faq)/i
+};
+const HINT_RX = /^(auf die bilder klicken|klicken sie auf die titel)/i;
+
+const SETTINGS_DEFAULT = { imgW: 200, logoW: 90, maxPx: 1200, imgMode: 'embed', accordion: true, ss: true };
+const store = {
+  get(k, d) { try { const v = localStorage.getItem('kbt.' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem('kbt.' + k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+};
+
+let uid = 0;
+const newId = () => 'r' + (++uid);
+const tocId = () => 'mcetoc_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const newRow = (o = {}) => ({ id: newId(), img: '', missing: false, text: '', subtitle: '', ...o });
+
+const state = {
+  title: '',
+  logo: '',
+  settings: { ...SETTINGS_DEFAULT, ...store.get('settings', {}) },
+  sections: emptySections(),
+  links: [],
+  ids: {}
+};
+
+function emptySections() {
+  const s = {};
+  SECTION_KEYS.forEach((k) => { s[k] = { title: SECTION_DEFAULTS[k], rows: [] }; });
+  return s;
+}
+function newIds() {
+  state.ids = { beschreibung: tocId(), anleitung: tocId(), zusatz: tocId(), links: tocId() };
+}
+newIds();
+
+/* ---------------- Hilfsfunktionen ---------------- */
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function textOf(html) { const d = document.createElement('div'); d.innerHTML = html; return d.textContent.replace(/ /g, ' ').replace(/\s+/g, ' ').trim(); }
+function hasText(html) { return textOf(html).length > 0; }
+function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('show'), 1800); }
+function readAs(file, how) {
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r[how](file); });
+}
+function safeHref(href) {
+  if (!href) return '';
+  href = href.trim();
+  if (/^(https?:|mailto:|tel:)/i.test(href)) return href;
+  if (/^www\./i.test(href)) return 'https://' + href;
+  if (/^\/[^/]/.test(href) || /^[\w-]+\.do\b/i.test(href)) return href; /* ServiceNow-relative Links */
+  return '';
+}
+
+/* ---------------- HTML bereinigen ---------------- */
+const KEEP = { A: 1, STRONG: 1, EM: 1, U: 1, BR: 1, UL: 1, OL: 1, LI: 1, SUB: 1, SUP: 1, CODE: 1, P: 1, DIV: 1, TABLE: 1, THEAD: 1, TBODY: 1, TR: 1, TD: 1, TH: 1 };
+const DROP = { SCRIPT: 1, STYLE: 1, META: 1, LINK: 1, TITLE: 1, HEAD: 1, IMG: 1, SVG: 1, OBJECT: 1, IFRAME: 1, NOSCRIPT: 1, TEMPLATE: 1, BUTTON: 1, INPUT: 1, SELECT: 1, TEXTAREA: 1 };
+
+function sanitize(html) {
+  const src = new DOMParser().parseFromString('<!DOCTYPE html><body>' + html + '</body>', 'text/html').body;
+  const out = document.createElement('div');
+  copyChildren(src, out);
+  autolink(out);
+  out.querySelectorAll('strong:empty, em:empty, u:empty, a:empty').forEach((e) => e.remove());
+  return out.innerHTML.trim();
+}
+function copyChildren(from, to) { for (const n of Array.from(from.childNodes)) copyNode(n, to); }
+function copyNode(n, to) {
+  if (n.nodeType === 3) { to.appendChild(document.createTextNode(n.nodeValue.replace(/[\s ]+/g, ' '))); return; }
+  if (n.nodeType !== 1) return;
+  let tag = n.tagName.toUpperCase();
+  if (DROP[tag] || tag.includes(':')) return;
+  const st = (n.getAttribute('style') || '').toLowerCase();
+  if (/display\s*:\s*none/.test(st) || /mso-hide\s*:\s*all/.test(st)) return;
+  if (tag === 'B') tag = 'STRONG';
+  if (tag === 'I') tag = 'EM';
+  if (tag === 'STRONG' && /font-weight\s*:\s*(normal|[1-4]00)/.test(st)) tag = 'SPAN'; /* Google-Docs-Wrapper */
+  let target = to;
+  const wrap = (t) => { const el = document.createElement(t); target.appendChild(el); target = el; };
+  if (KEEP[tag]) {
+    if (tag === 'A') {
+      const href = safeHref(n.getAttribute('href'));
+      if (href) { wrap('A'); target.setAttribute('href', href); target.setAttribute('target', '_blank'); target.setAttribute('rel', 'noopener noreferrer'); }
+    } else {
+      wrap(tag);
+      if (tag === 'OL' && n.getAttribute('start')) target.setAttribute('start', n.getAttribute('start'));
+      if ((tag === 'OL' || tag === 'UL') && n.getAttribute('type')) target.setAttribute('type', n.getAttribute('type'));
+      if (tag === 'TD' || tag === 'TH') ['colspan', 'rowspan'].forEach((a) => { if (n.getAttribute(a)) target.setAttribute(a, n.getAttribute(a)); });
+    }
+  }
+  if (tag !== 'STRONG' && /font-weight\s*:\s*(bold|[6-9]00)/.test(st)) wrap('STRONG');
+  if (tag !== 'EM' && /font-style\s*:\s*italic/.test(st)) wrap('EM');
+  if (tag !== 'U' && tag !== 'A' && /text-decoration[^;]*underline/.test(st) && !n.closest('a')) wrap('U');
+  copyChildren(n, target);
+}
+const URL_RX = /\b((?:https?:\/\/|www\.)[^\s<>"']+|[\w.+-]+@[\w-]+(?:\.[\w-]+)*\.[a-z]{2,})/gi;
+function autolink(root) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) if (!walker.currentNode.parentElement.closest('a')) nodes.push(walker.currentNode);
+  for (const t of nodes) {
+    const s = t.nodeValue;
+    URL_RX.lastIndex = 0;
+    if (!URL_RX.test(s)) continue;
+    URL_RX.lastIndex = 0;
+    const frag = document.createDocumentFragment();
+    let last = 0, m;
+    while ((m = URL_RX.exec(s))) {
+      let u = m[1];
+      const trail = (u.match(/[.,;:!?)\]}"'“”»]+$/) || [''])[0];
+      u = u.slice(0, u.length - trail.length);
+      frag.appendChild(document.createTextNode(s.slice(last, m.index)));
+      const a = document.createElement('a');
+      a.href = u.includes('@') && !/^https?:|^www\./i.test(u) ? 'mailto:' + u : safeHref(u);
+      a.target = '_blank'; a.rel = 'noopener noreferrer';
+      a.textContent = u;
+      frag.appendChild(a);
+      last = m.index + u.length;
+    }
+    frag.appendChild(document.createTextNode(s.slice(last)));
+    t.parentNode.replaceChild(frag, t);
+  }
+}
+
+/* ---------------- HTML -> Bausteine ---------------- */
+/* Baustein: {type:'heading',level,text} | {type:'p',html} | {type:'list',html} | {type:'table',html} | {type:'img',src} */
+const BLOCK_TAGS = new Set(['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL', 'TABLE', 'BLOCKQUOTE', 'PRE', 'SECTION', 'ARTICLE', 'HEADER', 'FOOTER', 'MAIN', 'ASIDE', 'NAV', 'FIGURE', 'FIGCAPTION', 'DETAILS', 'SUMMARY', 'CENTER', 'DL', 'DT', 'DD', 'HR', 'FORM', 'ADDRESS', 'BODY']);
+
+function htmlToBlocks(html) {
+  const body = new DOMParser().parseFromString(html, 'text/html').body;
+  const blocks = [];
+  walkContainer(body, blocks);
+  continueNumbering(blocks);
+  return blocks;
+}
+/* Nummerierte Listen, die nur durch Bilder unterbrochen sind, weiterzählen (Word/Mammoth beginnt sonst wieder bei 1) */
+function continueNumbering(blocks) {
+  let next = 0;
+  for (const b of blocks) {
+    if (b.type === 'img') continue;
+    if (b.type === 'list' && /^<ol/.test(b.html)) {
+      const m = b.html.match(/^<ol start="(\d+)"/);
+      if (!m && next > 1) b.html = b.html.replace(/^<ol/, `<ol start="${next}"`);
+      next = (m ? +m[1] : next > 1 ? next : 1) + (b.html.match(/<li>/g) || []).length;
+    } else next = 0;
+  }
+}
+function walkContainer(el, blocks) {
+  let buf = [];
+  const flush = () => { if (buf.length) { inlineToBlocks(buf, blocks, el); buf = []; } };
+  for (const n of Array.from(el.childNodes)) {
+    if (n.nodeType === 1 && BLOCK_TAGS.has(n.tagName)) { flush(); handleBlock(n, blocks); } else buf.push(n);
+  }
+  flush();
+}
+function handleBlock(n, blocks) {
+  const tag = n.tagName;
+  if (/^H[1-6]$/.test(tag) || tag === 'SUMMARY' || tag === 'DT') {
+    const text = n.textContent.replace(/[\s ]+/g, ' ').trim();
+    if (text) blocks.push({ type: 'heading', level: tag[0] === 'H' ? +tag[1] : 3, text });
+    n.querySelectorAll('img').forEach((i) => i.getAttribute('src') && blocks.push({ type: 'img', src: i.getAttribute('src') }));
+    return;
+  }
+  if (tag === 'UL' || tag === 'OL') return listToBlocks(n, blocks);
+  if (tag === 'TABLE') {
+    if (n.querySelector('img') || isLayoutTable(n)) {
+      for (const tr of n.querySelectorAll('tr')) for (const td of tr.children) walkContainer(td, blocks);
+    } else {
+      const h = sanitize(n.outerHTML);
+      if (hasText(h)) blocks.push({ type: 'table', html: h });
+    }
+    return;
+  }
+  if (tag === 'HR') return;
+  if (tag === 'PRE') {
+    const h = esc(n.textContent).replace(/\n/g, '<br>');
+    if (h.trim()) blocks.push({ type: 'p', html: sanitize(h) });
+    return;
+  }
+  if (Array.from(n.children).some((c) => BLOCK_TAGS.has(c.tagName))) walkContainer(n, blocks);
+  else inlineToBlocks(Array.from(n.childNodes), blocks, n);
+}
+function isLayoutTable(t) {
+  /* Tabellen mit nur 1 Spalte oder Tabellen aus dem KB-Template (5 Spalten mit leeren Rand-Zellen) */
+  const rows = t.querySelectorAll('tr');
+  const maxCols = Math.max(0, ...Array.from(rows).map((r) => r.children.length));
+  return maxCols <= 1 || /width:\s*5%/.test(t.innerHTML);
+}
+function inlineToBlocks(nodes, blocks, parent) {
+  const tmp = document.createElement('div');
+  nodes.forEach((x) => tmp.appendChild(x.cloneNode(true)));
+  const parts = tmp.innerHTML.split(/(<img\b[^>]*>)/i);
+  for (const part of parts) {
+    if (/^<img\b/i.test(part)) {
+      const img = new DOMParser().parseFromString(part, 'text/html').querySelector('img');
+      const src = img && img.getAttribute('src');
+      const w = img && parseInt(img.getAttribute('width') || '0', 10);
+      if (src && !(w && w < 24)) blocks.push({ type: 'img', src });
+      continue;
+    }
+    const s = sanitize(part);
+    if (!hasText(s)) continue;
+    const t = textOf(s);
+    /* Fett formatierte Kurzzeile = Zwischentitel */
+    if (/^<strong>[\s\S]*<\/strong>$/.test(s) && !/<strong>[\s\S]*<\/strong>[\s\S]*<strong>/.test(s) && t.length < 80 && !/[.!?,;]$/.test(t) && !/<a /.test(s)) {
+      blocks.push({ type: 'heading', level: 4, text: t.replace(/:$/, '') });
+    } else blocks.push({ type: 'p', html: s });
+  }
+}
+function listToBlocks(list, blocks) {
+  const tag = list.tagName.toLowerCase();
+  let n = parseInt(list.getAttribute('start') || '1', 10) || 1;
+  let cur = [], curStart = n;
+  const flush = () => {
+    if (!cur.length) return;
+    const start = tag === 'ol' && curStart !== 1 ? ` start="${curStart}"` : '';
+    blocks.push({ type: 'list', html: `<${tag}${start}>${cur.join('')}</${tag}>` });
+    cur = [];
+  };
+  for (const li of Array.from(list.children)) {
+    if (li.tagName !== 'LI') continue;
+    const imgs = Array.from(li.querySelectorAll('img')).map((i) => i.getAttribute('src')).filter(Boolean);
+    const clone = li.cloneNode(true);
+    clone.querySelectorAll('img').forEach((i) => i.remove());
+    const inner = sanitize(clone.innerHTML);
+    if (hasText(inner)) { if (!cur.length) curStart = n; cur.push(`<li>${inner}</li>`); }
+    n++;
+    if (imgs.length) { flush(); imgs.forEach((src) => blocks.push({ type: 'img', src })); }
+  }
+  flush();
+}
+
+/* ---------------- Text -> HTML ---------------- */
+function textToHtml(txt) {
+  const lines = txt.replace(/\r\n?/g, '\n').split('\n');
+  const out = [];
+  let para = [];
+  const flush = () => { if (para.length) { out.push('<p>' + para.join('<br>') + '</p>'); para = []; } };
+  for (const raw of lines) {
+    const l = raw.trim();
+    if (!l) { flush(); continue; }
+    const plain = l.replace(/:$/, '');
+    if (plain.length < 60 && SECTION_KEYS.some((k) => SECTION_RX[k].test(plain)) && !/[.!?]$/.test(plain)) {
+      flush(); out.push('<h2>' + esc(plain) + '</h2>'); continue;
+    }
+    if (/^(\d+[.)]|[-*•●▪–])\s+/.test(l)) flush();
+    para.push(esc(l));
+  }
+  flush();
+  return out.join('\n');
+}
+
+/* ---------------- PDF -> HTML ---------------- */
+async function pdfToHtml(buf, warnings) {
+  const pdf = await pdfjsLib.getDocument({ data: buf, isOffscreenCanvasSupported: false, isEvalSupported: false }).promise;
+  const pages = [];
+  const seenImg = new Map();
+  for (let p = 1; p <= pdf.numPages; p++) {
+    const page = await pdf.getPage(p);
+    const tc = await page.getTextContent();
+    const annots = await page.getAnnotations();
+    const links = annots.filter((a) => a.subtype === 'Link' && a.url).map((a) => ({ rect: a.rect, url: a.url }));
+    const linkAt = (x, y) => { const l = links.find((k) => x >= k.rect[0] - 1 && x <= k.rect[2] + 1 && y >= k.rect[1] - 2 && y <= k.rect[3] + 2); return l ? l.url : ''; };
+
+    /* Textzeilen bilden */
+    const items = tc.items.filter((i) => typeof i.str === 'string' && i.str.length)
+      .map((i) => { const size = Math.hypot(i.transform[2], i.transform[3]) || i.height || 10; return { str: i.str, x: i.transform[4], y: i.transform[5], w: i.width, size, bold: /bold|black|heavy|semibold/i.test((tc.styles[i.fontName] || {}).fontFamily || '') || /bold/i.test(i.fontName) }; })
+      .sort((a, b) => b.y - a.y || a.x - b.x);
+    const lines = [];
+    for (const it of items) {
+      const ln = lines.find((l) => Math.abs(l.y - it.y) < Math.max(2, it.size * 0.45));
+      if (ln) ln.items.push(it); else lines.push({ y: it.y, items: [it] });
+    }
+    const entries = [];
+    for (const ln of lines) {
+      ln.items.sort((a, b) => a.x - b.x);
+      let html = '', prevEnd = null, curUrl = '', size = 0, text = '', boldChars = 0;
+      for (const it of ln.items) {
+        if (!it.str.trim() && !it.w) continue;
+        const gap = prevEnd == null ? 0 : it.x - prevEnd;
+        const sep = prevEnd != null && gap > it.size * 0.15 && !/\s$/.test(text) && !/^\s/.test(it.str) ? ' ' : '';
+        /* Text in Abschnitte innerhalb/ausserhalb von Link-Flächen aufteilen (Zeichenbreite geschätzt) */
+        const segs = [];
+        const len = it.str.length;
+        for (let c = 0; c < len; c++) {
+          const u = links.length ? linkAt(it.x + (it.w || it.size * 0.5 * len) * (c + 0.5) / len, it.y + it.size / 3) : '';
+          if (segs.length && segs[segs.length - 1].url === u) segs[segs.length - 1].s += it.str[c]; else segs.push({ url: u, s: it.str[c] });
+        }
+        segs.forEach((g, gi) => {
+          /* Satzzeichen am Link-Ende nicht verlinken */
+          if (g.url) { const m = g.s.match(/[\s.,;:!?)]+$/); if (m && segs[gi + 1] && !segs[gi + 1].url) { segs[gi + 1].s = m[0] + segs[gi + 1].s; g.s = g.s.slice(0, -m[0].length); } else if (m && !segs[gi + 1]) { segs.splice(gi + 1, 0, { url: '', s: m[0] }); g.s = g.s.slice(0, -m[0].length); } }
+        });
+        segs.forEach((g, gi) => {
+          if (!g.s) return;
+          const pre = gi === 0 ? sep : '';
+          if (g.url !== curUrl) { if (curUrl) html += '</a>'; html += pre; if (g.url) html += `<a href="${esc(g.url)}">`; curUrl = g.url; } else html += pre;
+          html += esc(g.s);
+        });
+        text += sep + it.str;
+        if (it.bold) boldChars += it.str.length;
+        prevEnd = it.x + it.w; size = Math.max(size, it.size);
+      }
+      if (curUrl) html += '</a>';
+      if (text.trim()) entries.push({ kind: 'line', top: ln.y + size, y: ln.y, size, html, text: text.trim(), bold: boldChars >= text.trim().length * 0.8 });
+    }
+
+    /* Bilder mit Position */
+    const ops = await page.getOperatorList();
+    const O = pdfjsLib.OPS;
+    let ctm = [1, 0, 0, 1, 0, 0];
+    const stack = [];
+    for (let i = 0; i < ops.fnArray.length; i++) {
+      const fn = ops.fnArray[i], args = ops.argsArray[i];
+      if (fn === O.save) stack.push(ctm);
+      else if (fn === O.restore) ctm = stack.pop() || [1, 0, 0, 1, 0, 0];
+      else if (fn === O.transform) ctm = pdfjsLib.Util.transform(ctm, args);
+      else if (fn === O.paintFormXObjectBegin) { stack.push(ctm); if (args[0]) ctm = pdfjsLib.Util.transform(ctm, args[0]); }
+      else if (fn === O.paintFormXObjectEnd) ctm = stack.pop() || [1, 0, 0, 1, 0, 0];
+      else if (fn === O.paintImageXObject || fn === O.paintInlineImageXObject) {
+        const w = Math.hypot(ctm[0], ctm[1]), h = Math.hypot(ctm[2], ctm[3]);
+        if (w < 30 && h < 30) continue; /* Icons / Aufzählungszeichen */
+        const top = Math.max(ctm[5], ctm[5] + ctm[3]);
+        let src = '';
+        try {
+          const obj = fn === O.paintInlineImageXObject ? args[0] : await getPdfObj(page, args[0]);
+          src = pdfImageToDataUrl(obj);
+        } catch (e) { src = ''; }
+        if (!src) { warnings.push(`Ein Bild auf Seite ${p} konnte nicht gelesen werden.`); continue; }
+        const key = src.length + ':' + src.slice(-200);
+        /* gleiches Bild an gleicher Stelle auf anderer Seite (z.B. Logo in der Kopfzeile) nur einmal */
+        const prevPos = seenImg.get(key);
+        if (prevPos && prevPos.p !== p && Math.abs(prevPos.top - top) < 5 && Math.abs(prevPos.x - ctm[4]) < 5) continue;
+        if (!prevPos) seenImg.set(key, { p, top, x: ctm[4] });
+        entries.push({ kind: 'img', top, y: top - h, src });
+      }
+    }
+    entries.sort((a, b) => b.top - a.top);
+    pages.push(entries);
+  }
+
+  /* Kopf-/Fusszeilen und Seitenzahlen entfernen */
+  const count = new Map();
+  pages.forEach((en) => new Set(en.filter((e) => e.kind === 'line').map((e) => e.text.replace(/\d+/g, '#'))).forEach((t) => count.set(t, (count.get(t) || 0) + 1)));
+  const repeated = (t) => pages.length > 2 && (count.get(t.replace(/\d+/g, '#')) || 0) >= Math.ceil(pages.length * 0.6);
+  const pageNo = /^(seite|page)?\s*\d+(\s*(\/|von|of)\s*\d+)?$/i;
+
+  const sizes = [];
+  pages.forEach((en) => en.forEach((e) => { if (e.kind === 'line') for (let k = 0; k < e.text.length; k++) sizes.push(e.size); }));
+  sizes.sort((a, b) => a - b);
+  const body = sizes.length ? sizes[Math.floor(sizes.length / 2)] : 10;
+
+  const out = [];
+  let para = null, prev = null;
+  const flush = () => { if (para) { out.push('<p>' + para.join(' ').replace(/- (?=[a-zäöü])/g, '-') + '</p>'); para = null; } };
+  for (const en of pages) {
+    prev = null;
+    for (const e of en) {
+      if (e.kind === 'img') { flush(); out.push(`<img src="${e.src}">`); prev = null; continue; }
+      if (pageNo.test(e.text) || repeated(e.text)) continue;
+      const isHeading = e.text.length < 100 && (e.size >= body * 1.2 || (e.bold && e.text.length < 70 && !/[.,;]$/.test(e.text)));
+      if (isHeading) {
+        flush();
+        out.push(`<h${e.size >= body * 1.6 ? 1 : e.size >= body * 1.2 ? 2 : 3}>${esc(e.text)}</h${e.size >= body * 1.6 ? 1 : e.size >= body * 1.2 ? 2 : 3}>`);
+        prev = null; continue;
+      }
+      const bullet = /^(\d+[.)]|[-•●▪–])\s*/.test(e.text);
+      if (!para || bullet || !prev || prev.y - e.y > e.size * 1.75) { flush(); para = []; }
+      para.push(e.html);
+      prev = e;
+    }
+    flush();
+  }
+  return out.join('\n');
+}
+function getPdfObj(page, id) {
+  const objs = id.startsWith('g_') ? page.commonObjs : page.objs;
+  return new Promise((res, rej) => { try { objs.get(id, res); } catch (e) { rej(e); } setTimeout(() => rej(new Error('timeout')), 15000); });
+}
+function pdfImageToDataUrl(img) {
+  if (!img) return '';
+  const c = document.createElement('canvas');
+  c.width = img.width; c.height = img.height;
+  const ctx = c.getContext('2d');
+  if (img.bitmap) ctx.drawImage(img.bitmap, 0, 0);
+  else if (img.data) {
+    const id = ctx.createImageData(img.width, img.height);
+    const d = id.data, s = img.data, n = img.width * img.height;
+    if (img.kind === 3) d.set(s.subarray(0, n * 4));
+    else if (img.kind === 2) { for (let i = 0, j = 0; i < n; i++, j += 3) { d[i * 4] = s[j]; d[i * 4 + 1] = s[j + 1]; d[i * 4 + 2] = s[j + 2]; d[i * 4 + 3] = 255; } }
+    else if (img.kind === 1) {
+      const rowBytes = (img.width + 7) >> 3;
+      for (let y = 0; y < img.height; y++) for (let x = 0; x < img.width; x++) {
+        const bit = (s[y * rowBytes + (x >> 3)] >> (7 - (x & 7))) & 1, v = bit ? 255 : 0, o = (y * img.width + x) * 4;
+        d[o] = d[o + 1] = d[o + 2] = v; d[o + 3] = 255;
+      }
+    } else return '';
+    ctx.putImageData(id, 0, 0);
+  } else return '';
+  return c.toDataURL('image/png');
+}
+
+/* ---------------- Bilder aufbereiten ---------------- */
+function loadImg(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
+async function normalizeImage(src, maxPx) {
+  if (!src) return { src: '', missing: true };
+  if (/^file:/i.test(src) || /^cid:/i.test(src)) return { src: '', missing: true };
+  if (/^blob:/i.test(src)) {
+    try { const b = await (await fetch(src)).blob(); src = await readAs(b, 'readAsDataURL'); } catch (e) { return { src: '', missing: true }; }
+  }
+  if (!/^data:/i.test(src)) return { src, missing: false }; /* URL (z.B. ServiceNow-Anhang) unverändert übernehmen */
+  let img;
+  try { img = await loadImg(src); } catch (e) { return { src: '', missing: true }; } /* z.B. EMF/WMF/TIFF */
+  const mime = (src.match(/^data:([^;,]+)/) || [])[1] || '';
+  const tooBig = maxPx && img.naturalWidth > maxPx;
+  if (!tooBig && /^image\/(png|jpe?g|gif)$/i.test(mime)) return { src, missing: false };
+  const scale = tooBig ? maxPx / img.naturalWidth : 1;
+  const c = document.createElement('canvas');
+  c.width = Math.round(img.naturalWidth * scale); c.height = Math.round(img.naturalHeight * scale);
+  const ctx = c.getContext('2d');
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, 0, 0, c.width, c.height);
+  return { src: /jpe?g/i.test(mime) ? c.toDataURL('image/jpeg', 0.88) : c.toDataURL('image/png'), missing: false };
+}
+
+/* ---------------- Bausteine -> Modell ---------------- */
+function classify(text) {
+  const t = text.trim().replace(/^[\d.\s)\-]+/, '');
+  if (t.length > 60) return null;
+  for (const k of SECTION_KEYS) if (SECTION_RX[k].test(t)) return k;
+  return null;
+}
+function blockHtml(b) { return b.type === 'p' ? `<p>${b.html}</p>` : b.html; }
+
+function blocksToRows(blocks, textBefore) {
+  const rows = [];
+  let pending = [], subtitle = '', cur = null;
+  const mk = (img, parts) => { const r = newRow({ img, text: parts.map(blockHtml).join(''), subtitle }); subtitle = ''; rows.push(r); return r; };
+  const setSub = (t) => { if (subtitle) mk('', [{ type: 'p', html: `<strong>${esc(subtitle)}</strong>` }]); subtitle = t; };
+  for (const b of blocks) {
+    if (textBefore) {
+      if (b.type === 'heading') { if (pending.length) { mk('', pending); pending = []; } setSub(b.text); }
+      else if (b.type === 'img') { mk(b.src, pending); pending = []; }
+      else pending.push(b);
+    } else {
+      if (b.type === 'heading') { cur = null; setSub(b.text); }
+      else if (b.type === 'img') cur = mk(b.src, []);
+      else { if (!cur) cur = mk('', []); cur.text += blockHtml(b); }
+    }
+  }
+  if (pending.length) mk('', pending);
+  if (subtitle) mk('', []);
+  return rows;
+}
+
+function blocksToModel(blocks, textBefore, fallbackTitle) {
+  blocks = blocks.slice();
+  let title = '';
+  const firstH = blocks.findIndex((b) => b.type === 'heading');
+  if (firstH !== -1 && firstH <= 1 && !classify(blocks[firstH].text) && blocks.slice(0, firstH).every((b) => b.type === 'img')) {
+    title = blocks.splice(firstH, 1)[0].text;
+  }
+  /* Template-Reste (Inhaltsverzeichnis, Hinweiszeilen) entfernen */
+  const clean = [];
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    if (b.type === 'heading' && /^inhaltsverzeichnis$/i.test(b.text.trim())) { if (blocks[i + 1] && blocks[i + 1].type === 'list') i++; continue; }
+    if (b.type === 'p' && HINT_RX.test(textOf(b.html))) continue;
+    clean.push(b);
+  }
+  const chunks = { auto: [], beschreibung: [], anleitung: [], zusatz: [] };
+  let cur = 'auto', found = false;
+  for (const b of clean) {
+    const k = b.type === 'heading' ? classify(b.text) : null;
+    if (k) { cur = k; found = true; continue; }
+    chunks[cur].push(b);
+  }
+  const sections = emptySections();
+  if (found) {
+    sections.beschreibung.rows = blocksToRows(chunks.auto.concat(chunks.beschreibung), textBefore);
+    sections.anleitung.rows = blocksToRows(chunks.anleitung, textBefore);
+  } else {
+    const rows = blocksToRows(chunks.auto, textBefore);
+    if (rows.length > 1) { sections.beschreibung.rows = [rows[0]]; sections.anleitung.rows = rows.slice(1); }
+    else if (rows.length === 1 && !rows[0].img) {
+      /* Nur Text: erster Absatz = Beschreibung, Rest = Anleitung */
+      const all = chunks.auto.filter((b) => b.type !== 'heading');
+      let cut = all.findIndex((b, i) => i > 0 && b.type !== 'p');
+      if (cut === -1) cut = Math.min(1, all.length);
+      sections.beschreibung.rows = blocksToRows(all.slice(0, cut), textBefore);
+      sections.anleitung.rows = blocksToRows(all.slice(cut), textBefore);
+    } else sections.beschreibung.rows = rows;
+  }
+  /* Zusätzliche Informationen: Listen -> Linkliste, Rest -> Zeilen */
+  const links = [], rest = [];
+  for (const b of chunks.zusatz) {
+    if (b.type === 'list') {
+      const d = document.createElement('div'); d.innerHTML = b.html;
+      d.querySelectorAll('li').forEach((li) => {
+        const a = li.querySelector('a');
+        const text = li.textContent.replace(/\s+/g, ' ').trim();
+        if (text || a) links.push({ text: text || (a && a.getAttribute('href')) || '', url: a ? a.getAttribute('href') : '' });
+      });
+    } else rest.push(b);
+  }
+  sections.zusatz.rows = blocksToRows(rest, textBefore);
+  return { title: title || fallbackTitle || '', sections, links };
+}
+
+/* ---------------- Umwandeln ---------------- */
+let srcFile = null;
+async function convert() {
+  const warnings = [];
+  const textBefore = document.querySelector('input[name=order]:checked').value === 'before';
+  let html = '', fallbackTitle = '';
+  showMsg('info', 'Wird umgewandelt …');
+  try {
+    const pasted = $('#paste').innerHTML.trim();
+    if (srcFile) {
+      fallbackTitle = srcFile.name.replace(/\.[^.]+$/, '').replace(/[_]+/g, ' ');
+      const ext = (srcFile.name.split('.').pop() || '').toLowerCase();
+      if (ext === 'docx') {
+        const buf = await readAs(srcFile, 'readAsArrayBuffer');
+        const res = await mammoth.convertToHtml({ arrayBuffer: buf }, {
+          styleMap: ["p[style-name='Title'] => h1:fresh", "p[style-name='Titel'] => h1:fresh", "p[style-name='Subtitle'] => h2:fresh", "p[style-name='Untertitel'] => h2:fresh"]
+        });
+        html = res.value;
+      } else if (ext === 'pdf') {
+        html = await pdfToHtml(await readAs(srcFile, 'readAsArrayBuffer'), warnings);
+        warnings.push('PDF: Absätze, Titel und Listen werden aus der Schriftgrösse und dem Abstand erkannt. Bitte das Ergebnis kontrollieren.');
+      } else if (ext === 'doc') {
+        throw new Error('Das alte Word-Format .doc wird nicht unterstützt. Bitte in Word als .docx speichern.');
+      } else if (ext === 'txt') {
+        html = textToHtml(await readAs(srcFile, 'readAsText'));
+      } else {
+        html = await readAs(srcFile, 'readAsText');
+      }
+    } else if (pasted && hasText(pasted) || /<img/i.test(pasted)) {
+      html = pasted;
+    } else {
+      throw new Error('Bitte zuerst eine Datei wählen oder Inhalt einfügen.');
+    }
+    const blocks = htmlToBlocks(html);
+    if (!blocks.length) throw new Error('Im Dokument wurde kein Inhalt gefunden.');
+    const model = blocksToModel(blocks, textBefore, fallbackTitle);
+    let missing = 0;
+    for (const k of SECTION_KEYS) {
+      for (const r of model.sections[k].rows) {
+        if (!r.img) continue;
+        const n = await normalizeImage(r.img, state.settings.maxPx);
+        r.img = n.src; r.missing = n.missing;
+        if (n.missing) missing++;
+      }
+    }
+    if (missing) warnings.push(`${missing} Bild(er) konnten nicht übernommen werden (z.B. beim Einfügen aus Word über die Zwischenablage oder bei EMF-Grafiken). Diese sind gelb markiert. Bitte das Bild dort neu einfügen oder die .docx-Datei verwenden.`);
+    state.title = model.title;
+    state.sections = model.sections;
+    state.links = model.links;
+    newIds();
+    renderEditor();
+    update();
+    showMsg(warnings.length ? 'warn' : 'info', warnings.length ? warnings : ['Umgewandelt. Bitte die Zuordnung in Schritt 2 kontrollieren und bei Bedarf anpassen.']);
+  } catch (e) {
+    console.error(e);
+    showMsg('err', e.message || String(e));
+  }
+}
+function showMsg(kind, lines) {
+  lines = [].concat(lines);
+  $('#msgs').innerHTML = `<div class="msg ${kind}">${lines.length > 1 ? '<ul>' + lines.map((l) => `<li>${esc(l)}</li>`).join('') + '</ul>' : esc(lines[0])}</div>`;
+}
+
+/* ---------------- Ausgabe (Template) ---------------- */
+function styleText(html) {
+  const d = document.createElement('div');
+  d.innerHTML = sanitize(html);
+  const out = [];
+  let inline = '';
+  const pushP = (h) => { if (hasText(h)) out.push(`<p><span style="${FONT} font-size: 12pt;">${h.trim()}</span></p>`); };
+  const flushInline = () => { pushP(inline); inline = ''; };
+  const visit = (parent) => {
+    for (const n of Array.from(parent.childNodes)) {
+      const tag = n.nodeType === 1 ? n.tagName : '';
+      if (tag === 'P') { flushInline(); pushP(n.innerHTML); }
+      else if (tag === 'DIV') { flushInline(); if (n.querySelector('p,div,ul,ol,table')) visit(n); else pushP(n.innerHTML); }
+      else if (tag === 'UL' || tag === 'OL' || tag === 'TABLE') {
+        flushInline();
+        n.setAttribute('style', tag === 'TABLE' ? `border-collapse: collapse; ${FONT} font-size: 12pt;` : `${FONT} font-size: 12pt;`);
+        if (tag === 'TABLE') { n.setAttribute('border', '1'); n.querySelectorAll('td,th').forEach((c) => c.setAttribute('style', 'padding: 4px 8px;')); }
+        out.push(n.outerHTML);
+      } else if (tag === 'BR' && !inline.trim()) { /* leere Zeile ignorieren */ }
+      else inline += n.nodeType === 1 ? n.outerHTML : esc(n.nodeValue || '');
+    }
+    flushInline();
+  };
+  visit(d);
+  return out.join('\n');
+}
+
+function imgTag(src, alt, width, n) {
+  if (state.settings.imgMode === 'placeholder' && /^data:/i.test(src)) return `<span style="${FONT} font-size: 12pt;">[Bild ${n} hier einf&uuml;gen: ${imgName(n, src)}]</span>`;
+  return `<img src="${esc(src)}" alt="${esc(alt)}" width="${width}" style="width: ${width}px; height: auto;">`;
+}
+function imgName(n, src) {
+  const ext = ((src.match(/^data:image\/([\w+]+)/) || [])[1] || 'png').replace('jpeg', 'jpg').replace('svg+xml', 'svg');
+  return 'bild-' + String(n).padStart(2, '0') + '.' + ext;
+}
+const EMPTY = (center) => `<p${center ? ' style="text-align: center;"' : ''}>&nbsp;</p>`;
+const TD = (w, inner, extra = '') => `<td style="width: ${w}; border-style: none;"${extra}>\n${inner}\n</td>`;
+
+function rowsTable(rows, ctx) {
+  if (!rows.length) return '';
+  const trs = rows.map((r) => {
+    const text = styleText(r.text) || EMPTY();
+    const textCell = `${EMPTY()}\n${text}\n${EMPTY()}`;
+    let cells;
+    if (r.img || r.missing) {
+      if (r.img) ctx.n++;
+      const pic = r.img ? imgTag(r.img, r.subtitle.trim() || 'Screenshot', state.settings.imgW, ctx.n) : `<span style="${FONT} font-size: 12pt;">[Bild hier einf&uuml;gen]</span>`;
+      cells = [TD('5%', EMPTY(true)), TD('35%', `${EMPTY(true)}\n<p style="text-align: center;">${pic}</p>\n${EMPTY(true)}`), TD('5%', EMPTY()), TD('50%', textCell), TD('5%', EMPTY())];
+    } else {
+      cells = [TD('5%', EMPTY()), TD('90%', textCell, ' colspan="3"'), TD('5%', EMPTY())];
+    }
+    return `<tr style="border-color: #ced4d9; border-style: solid;">\n${cells.join('\n')}\n</tr>`;
+  });
+  return `<table style="border-collapse: collapse; width: 100%; border-style: none;" border="1">\n<tbody>\n${trs.join('\n')}\n</tbody>\n</table>\n${EMPTY()}`;
+}
+
+function sectionBody(rows, ctx) {
+  /* Zeilen nach Untertitel gruppieren */
+  const groups = [];
+  for (const r of rows) {
+    if (r.subtitle.trim() || !groups.length) groups.push({ title: r.subtitle.trim(), rows: [] });
+    groups[groups.length - 1].rows.push(r);
+  }
+  return groups.map((g) => {
+    const table = rowsTable(g.rows, ctx);
+    if (!g.title) return table;
+    if (state.settings.accordion) {
+      return `<details class="mce-accordion" open="open">\n<summary><span style="${FONT} font-size: 14pt;">${esc(g.title)}</span></summary>\n${table}\n</details>\n${EMPTY()}`;
+    }
+    return `<h2><span style="${FONT} font-size: 14pt;"><strong>${esc(g.title)}</strong></span></h2>\n${table}`;
+  }).join('\n');
+}
+
+function hint(rows) {
+  const imgs = rows.some((r) => r.img || r.missing);
+  const acc = state.settings.accordion && rows.some((r) => r.subtitle.trim());
+  let t = '';
+  if (acc && imgs) t = 'Klicken Sie auf die Titel, um sie aufzuklappen, und auf die Bilder, um sie zu vergr&ouml;ssern.';
+  else if (acc) t = 'Klicken Sie auf die Titel, um sie aufzuklappen.';
+  else if (imgs) t = 'Auf die Bilder klicken, um sie zu vergr&ouml;ssern.';
+  return t ? `<p><em><span style="${FONT} font-size: 12pt;">${t}</span></em></p>\n` : '';
+}
+
+function buildHtml() {
+  const s = state.sections, ids = state.ids, ctx = { n: 0 };
+  const has = (k) => s[k].rows.some((r) => r.img || hasText(r.text) || r.subtitle.trim()) || (k === 'zusatz' && state.links.length);
+  const parts = [];
+  if (state.logo) parts.push(`<div><img src="${esc(state.logo)}" alt="Logo" width="${state.settings.logoW}" style="width: ${state.settings.logoW}px; height: auto;"></div>\n<div>&nbsp;</div>`);
+
+  const toc = SECTION_KEYS.filter(has).map((k) => {
+    const sub = k === 'zusatz' && state.links.length ? `\n<ul>\n<li><a href="#${ids.links}" rel="nofollow">Weitere hilfreiche Links / Dokumente:</a></li>\n</ul>\n` : '';
+    return `<li><a href="#${ids[k]}" rel="nofollow">${esc(s[k].title)}</a>${sub}</li>`;
+  });
+  if (toc.length) parts.push(`<div>\n<div class="mce-toc">\n<h2>Inhaltsverzeichnis</h2>\n<ul>\n${toc.join('\n')}\n</ul>\n</div>\n</div>\n<div>&nbsp;</div>`);
+
+  for (const k of SECTION_KEYS) {
+    if (!has(k)) continue;
+    const rows = s[k].rows.filter((r) => r.img || r.missing || hasText(r.text) || r.subtitle.trim());
+    parts.push(`<h1 id="${ids[k]}" style="${SECTION_STYLE[k]}"><span style="font-size: 18pt; ${FONT}"><strong>${esc(s[k].title)}</strong></span></h1>`);
+    parts.push(hint(rows) + sectionBody(rows, ctx));
+    if (k === 'zusatz' && state.links.length) {
+      const lis = state.links.map((l) => {
+        const href = safeHref(l.url);
+        const label = esc(l.text || l.url);
+        return `<li style="${FONT} font-size: 12pt;">${href ? `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer">${label}</a>` : label}</li>`;
+      });
+      parts.push(`<h2 id="${ids.links}"><span style="${FONT} font-size: 12pt;">Weitere hilfreiche Links / Dokumente:</span></h2>\n<ul style="list-style-position: inside;">\n${lis.join('\n')}\n</ul>\n${EMPTY()}`);
+    }
+  }
+  let html = parts.filter(Boolean).join('\n');
+  if (state.settings.ss) html = html.replace(/ß/g, 'ss').replace(/&szlig;/g, 'ss');
+  return encodeEntities(html);
+}
+const ENT = { 'ä': '&auml;', 'ö': '&ouml;', 'ü': '&uuml;', 'Ä': '&Auml;', 'Ö': '&Ouml;', 'Ü': '&Uuml;', 'é': '&eacute;', 'è': '&egrave;', 'à': '&agrave;', ' ': '&nbsp;', 'ß': '&szlig;', '«': '&laquo;', '»': '&raquo;' };
+function encodeEntities(s) { return s.replace(/[\u0080-\u{10FFFF}]/gu, (c) => ENT[c] || '&#' + c.codePointAt(0) + ';'); }
+
+/* ---------------- Vorschau / Code ---------------- */
+const PREVIEW_CSS = `body{font-family:arial,helvetica,sans-serif;color:#333;margin:0;padding:18px 22px;font-size:13px}
+.kbtitle{font-size:26px;font-weight:normal;margin:0 0 14px;color:#222}
+.mce-toc h2{font-size:22px;font-weight:normal;margin:10px 0 6px}
+.mce-toc ul{margin:0}
+a{color:#1f6f54}
+details.mce-accordion{border-bottom:1px solid #ddd;margin:6px 0}
+details.mce-accordion summary{cursor:pointer;padding:6px 0}
+img{max-width:100%}
+.zoom{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;cursor:zoom-out}
+.zoom img{max-width:95%;max-height:95%;width:auto!important;background:#fff}`;
+let updT;
+function update() { clearTimeout(updT); updT = setTimeout(doUpdate, 150); }
+function doUpdate() {
+  const html = buildHtml();
+  $('#code').value = html;
+  const title = esc(state.title || '');
+  $('#preview').srcdoc = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${PREVIEW_CSS}</style></head><body>${title ? `<h1 class="kbtitle">${title}</h1>` : ''}${html}
+<script>document.addEventListener('click',function(e){var t=e.target;if(t.tagName==='IMG'&&!t.closest('.zoom')){var z=document.createElement('div');z.className='zoom';z.innerHTML='<img src="'+t.src+'">';z.onclick=function(){z.remove()};document.body.appendChild(z)}else if(t.closest('a')&&t.closest('a').getAttribute('href').charAt(0)!=='#'){e.preventDefault();}});<\/script></body></html>`;
+  const kb = Math.round(new Blob([html]).size / 1024);
+  $('#sizeInfo').textContent = `Grösse: ${kb} KB` + (kb > 3000 ? ' – sehr gross; ev. Bilder verkleinern oder Platzhalter verwenden.' : '');
+}
+
+/* ---------------- Editor ---------------- */
+function renderEditor() {
+  $('#title').value = state.title;
+  renderLogo();
+  const wrap = $('#sections');
+  wrap.innerHTML = '';
+  for (const k of SECTION_KEYS) {
+    const sec = state.sections[k];
+    const el = document.createElement('div');
+    el.className = 'section sec-' + k;
+    el.innerHTML = `<div class="section-head"><input type="text" value="${esc(sec.title)}" title="Titel des Abschnitts"><span class="muted">${sec.rows.length} Zeile(n)</span></div><div class="section-body"></div>`;
+    el.querySelector('input').addEventListener('input', (e) => { sec.title = e.target.value; update(); });
+    const body = el.querySelector('.section-body');
+    sec.rows.forEach((r, i) => body.appendChild(rowEl(k, r, i)));
+    const add = document.createElement('button');
+    add.textContent = '+ Zeile hinzufügen';
+    add.onclick = () => { sec.rows.push(newRow()); renderEditor(); update(); };
+    body.appendChild(add);
+    if (k === 'zusatz') {
+      const lk = document.createElement('div');
+      lk.style.marginTop = '10px';
+      lk.innerHTML = `<div class="sub"><b>Weitere hilfreiche Links / Dokumente</b> <span class="muted">– eine Zeile pro Link: <code>Text | URL</code> oder nur <code>URL</code></span></div><textarea rows="4" spellcheck="false"></textarea>`;
+      const ta = lk.querySelector('textarea');
+      ta.value = state.links.map((l) => (l.url && l.text && l.text !== l.url ? `${l.text} | ${l.url}` : l.url || l.text)).join('\n');
+      ta.addEventListener('input', () => { state.links = parseLinks(ta.value); update(); });
+      body.appendChild(lk);
+    }
+    wrap.appendChild(el);
+  }
+}
+function parseLinks(v) {
+  return v.split('\n').map((l) => l.trim()).filter(Boolean).map((l) => {
+    const i = l.lastIndexOf('|');
+    if (i !== -1) return { text: l.slice(0, i).trim(), url: l.slice(i + 1).trim() };
+    return safeHref(l) ? { text: l, url: l } : { text: l, url: '' };
+  });
+}
+
+function rowEl(key, r, idx) {
+  const sec = state.sections[key];
+  const el = document.createElement('div');
+  el.className = 'r';
+  const left = document.createElement('div');
+  const box = document.createElement('div');
+  box.className = 'imgbox' + (r.missing && !r.img ? ' missing' : '');
+  box.innerHTML = r.img ? `<img src="${esc(r.img)}" alt="">` : (r.missing ? 'Bild fehlt –<br>bitte einfügen' : 'Kein Bild<br><span style="font-size:11px">(Bild hierher ziehen oder einfügen)</span>');
+  const btns = document.createElement('div');
+  btns.className = 'imgbtns';
+  const fileLbl = document.createElement('label');
+  fileLbl.className = 'btn small';
+  fileLbl.innerHTML = 'Bild<input type="file" accept="image/*" hidden>';
+  fileLbl.querySelector('input').onchange = (e) => e.target.files[0] && setRowImageFile(r, e.target.files[0]);
+  btns.appendChild(fileLbl);
+  btns.appendChild(btn('URL', () => { const u = prompt('Bild-URL (z.B. ServiceNow-Anhang /sys_attachment.do?sys_id=…):', /^data:/.test(r.img) ? '' : r.img); if (u != null) { r.img = u.trim(); r.missing = false; renderEditor(); update(); } }));
+  if (r.img) btns.appendChild(btn('Entfernen', () => { r.img = ''; r.missing = false; renderEditor(); update(); }));
+  left.appendChild(box); left.appendChild(btns);
+
+  const right = document.createElement('div');
+  const sub = document.createElement('input');
+  sub.type = 'text'; sub.className = 'sub'; sub.value = r.subtitle;
+  sub.placeholder = 'Untertitel (optional – beginnt ein neues Akkordeon)';
+  sub.addEventListener('input', () => { r.subtitle = sub.value; update(); });
+  const tb = document.createElement('div');
+  tb.className = 'toolbar';
+  const rt = document.createElement('div');
+  rt.className = 'rt'; rt.contentEditable = 'true'; rt.innerHTML = r.text;
+  rt.addEventListener('input', () => { r.text = rt.innerHTML; update(); });
+  rt.addEventListener('paste', (e) => onRtPaste(e, r, rt));
+  [['<b>F</b>', 'bold', 'Fett'], ['<i>K</i>', 'italic', 'Kursiv'], ['<u>U</u>', 'underline', 'Unterstrichen'], ['1.', 'insertOrderedList', 'Nummerierte Liste'], ['•', 'insertUnorderedList', 'Aufzählung']].forEach(([h, cmd, t]) => {
+    const b = document.createElement('button'); b.innerHTML = h; b.title = t;
+    b.onmousedown = (e) => e.preventDefault();
+    b.onclick = () => { rt.focus(); document.execCommand(cmd); r.text = rt.innerHTML; update(); };
+    tb.appendChild(b);
+  });
+  const lb = document.createElement('button'); lb.textContent = 'Link'; lb.title = 'Markierten Text verlinken';
+  lb.onmousedown = (e) => e.preventDefault();
+  lb.onclick = () => { const u = prompt('Link-Adresse (https://…):'); if (u) { rt.focus(); document.execCommand('createLink', false, safeHref(u) || u); r.text = rt.innerHTML; update(); } };
+  tb.appendChild(lb);
+  const ub = document.createElement('button'); ub.textContent = 'Link entfernen';
+  ub.onmousedown = (e) => e.preventDefault();
+  ub.onclick = () => { rt.focus(); document.execCommand('unlink'); r.text = rt.innerHTML; update(); };
+  tb.appendChild(ub);
+
+  const act = document.createElement('div');
+  act.className = 'ractions';
+  act.appendChild(btn('↑', () => move(sec.rows, idx, -1), 'Nach oben'));
+  act.appendChild(btn('↓', () => move(sec.rows, idx, 1), 'Nach unten'));
+  if (idx < sec.rows.length - 1) act.appendChild(btn('Mit nächster zusammenführen', () => {
+    const nx = sec.rows[idx + 1];
+    r.text += nx.text;
+    if (!r.img && nx.img) { r.img = nx.img; r.missing = nx.missing; }
+    else if (nx.img) { /* zweites Bild als eigene Zeile behalten */ nx.text = ''; nx.subtitle = ''; renderEditor(); update(); return; }
+    sec.rows.splice(idx + 1, 1); renderEditor(); update();
+  }));
+  act.appendChild(btn('Teilen', () => { sec.rows.splice(idx + 1, 0, newRow()); renderEditor(); update(); }, 'Neue leere Zeile darunter'));
+  const sel = document.createElement('select');
+  sel.innerHTML = '<option value="">Verschieben nach …</option>' + SECTION_KEYS.filter((k) => k !== key).map((k) => `<option value="${k}">${esc(state.sections[k].title)}</option>`).join('');
+  sel.onchange = () => { if (!sel.value) return; sec.rows.splice(idx, 1); const t = state.sections[sel.value].rows; if (SECTION_KEYS.indexOf(sel.value) < SECTION_KEYS.indexOf(key)) t.push(r); else t.unshift(r); renderEditor(); update(); };
+  act.appendChild(sel);
+  act.appendChild(btn('Löschen', () => { sec.rows.splice(idx, 1); renderEditor(); update(); }));
+
+  right.appendChild(sub); right.appendChild(tb); right.appendChild(rt); right.appendChild(act);
+  el.appendChild(left); el.appendChild(right);
+
+  /* Bild per Drag & Drop oder Einfügen auf das Bildfeld */
+  el.addEventListener('dragover', (e) => { if (hasImageFile(e.dataTransfer)) { e.preventDefault(); el.classList.add('dragover'); } });
+  el.addEventListener('dragleave', () => el.classList.remove('dragover'));
+  el.addEventListener('drop', (e) => { el.classList.remove('dragover'); const f = imageFile(e.dataTransfer); if (f) { e.preventDefault(); setRowImageFile(r, f); } });
+  box.tabIndex = 0;
+  box.title = 'Anklicken und Strg+V, um ein Bild aus der Zwischenablage einzufügen';
+  box.addEventListener('paste', (e) => { const f = imageFile(e.clipboardData); if (f) { e.preventDefault(); setRowImageFile(r, f); } });
+  return el;
+}
+function btn(label, fn, title) { const b = document.createElement('button'); b.className = 'small'; b.textContent = label; if (title) b.title = title; b.onclick = fn; return b; }
+function move(arr, i, d) { const j = i + d; if (j < 0 || j >= arr.length) return; [arr[i], arr[j]] = [arr[j], arr[i]]; renderEditor(); update(); }
+function hasImageFile(dt) { return dt && Array.from(dt.items || []).some((i) => i.kind === 'file' && /^image\//.test(i.type)); }
+function imageFile(dt) { return dt && Array.from(dt.files || []).find((f) => /^image\//.test(f.type)); }
+async function setRowImageFile(r, f) {
+  const n = await normalizeImage(await readAs(f, 'readAsDataURL'), state.settings.maxPx);
+  if (n.missing) { toast('Bildformat wird nicht unterstützt'); return; }
+  r.img = n.src; r.missing = false; renderEditor(); update();
+}
+function onRtPaste(e, r, rt) {
+  const cd = e.clipboardData;
+  const f = imageFile(cd);
+  const html = cd.getData('text/html');
+  if (f && !html) { e.preventDefault(); if (!r.img) setRowImageFile(r, f); else toast('Diese Zeile hat bereits ein Bild – neue Zeile mit «Teilen» anlegen.'); return; }
+  e.preventDefault();
+  const clean = html ? sanitize(html) : esc(cd.getData('text/plain')).replace(/\n/g, '<br>');
+  document.execCommand('insertHTML', false, clean);
+  r.text = rt.innerHTML; update();
+}
+
+/* ---------------- Logo ---------------- */
+function renderLogo() {
+  const t = $('#logoThumb');
+  if (state.logo) { t.src = state.logo; t.classList.remove('hidden'); } else t.classList.add('hidden');
+  const lib = store.get('logos', []);
+  $('#logoLib').innerHTML = '<option value="">Gespeicherte Logos …</option>' + lib.map((l, i) => `<option value="${i}">${esc(l.name)}</option>`).join('');
+}
+async function logoFromFile(f) {
+  const data = await readAs(f, 'readAsDataURL');
+  const n = await normalizeImage(data, state.settings.logoW * 2);
+  if (n.missing) { toast('Bildformat wird nicht unterstützt'); return; }
+  state.logo = n.src; renderLogo(); update();
+}
+
+/* ---------------- Ereignisse ---------------- */
+function bind() {
+  const fileIn = $('#file'), drop = $('#drop');
+  const setFile = (f) => { srcFile = f; $('#fileName').textContent = f ? 'Gewählt: ' + f.name : ''; };
+  fileIn.onchange = () => setFile(fileIn.files[0] || null);
+  drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over'); });
+  drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+  drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('over'); if (e.dataTransfer.files[0]) { setFile(e.dataTransfer.files[0]); convert(); } });
+  $('#paste').addEventListener('input', () => { if ($('#paste').innerHTML.trim()) setFile(null); fileIn.value = ''; });
+  $('#paste').addEventListener('paste', async (e) => {
+    const f = imageFile(e.clipboardData);
+    if (f && !e.clipboardData.getData('text/html')) {
+      e.preventDefault();
+      const data = await readAs(f, 'readAsDataURL');
+      document.execCommand('insertHTML', false, `<p><img src="${data}"></p>`);
+    }
+    setFile(null); fileIn.value = '';
+  });
+  $('#convert').onclick = convert;
+  $('#blank').onclick = () => {
+    state.title = ''; state.sections = emptySections(); state.links = []; newIds();
+    SECTION_KEYS.forEach((k) => state.sections[k].rows.push(newRow()));
+    renderEditor(); update(); showMsg('info', 'Leere Vorlage erstellt.');
+  };
+  $('#clearSrc').onclick = () => { $('#paste').innerHTML = ''; setFile(null); fileIn.value = ''; $('#msgs').innerHTML = ''; };
+  $('#title').addEventListener('input', (e) => { state.title = e.target.value; update(); });
+  $('#copyTitle').onclick = () => copyText(state.title, 'Titel kopiert');
+  $('#logoFile').onchange = (e) => e.target.files[0] && logoFromFile(e.target.files[0]);
+  $('#logoUrl').onclick = () => { const u = prompt('Logo-URL:', /^data:/.test(state.logo) ? '' : state.logo); if (u != null) { state.logo = u.trim(); renderLogo(); update(); } };
+  $('#logoRemove').onclick = () => { state.logo = ''; renderLogo(); update(); };
+  $('#logoLib').onchange = (e) => { const l = store.get('logos', [])[e.target.value]; if (l) { state.logo = l.src; renderLogo(); update(); } };
+  $('#logoSave').onclick = () => {
+    if (!state.logo) return toast('Zuerst ein Logo wählen');
+    const name = prompt('Name für das Logo (z.B. Microsoft):');
+    if (!name) return;
+    const lib = store.get('logos', []).filter((l) => l.name !== name);
+    lib.push({ name, src: state.logo });
+    lib.sort((a, b) => a.name.localeCompare(b.name));
+    toast(store.set('logos', lib) ? 'Logo gespeichert' : 'Speichern nicht möglich (Browser-Speicher voll oder gesperrt)');
+    renderLogo();
+  };
+  $('#logoDelete').onclick = () => {
+    const i = $('#logoLib').value;
+    if (i === '') return toast('Zuerst ein gespeichertes Logo auswählen');
+    const lib = store.get('logos', []); const l = lib.splice(+i, 1)[0];
+    store.set('logos', lib); renderLogo(); toast(`«${l.name}» gelöscht`);
+  };
+
+  const s = state.settings;
+  $('#setImgW').value = s.imgW; $('#setLogoW').value = s.logoW; $('#setMaxPx').value = s.maxPx;
+  $('#setImgMode').value = s.imgMode; $('#setAccordion').checked = s.accordion; $('#setSs').checked = s.ss;
+  const saveS = () => {
+    s.imgW = Math.max(50, +$('#setImgW').value || 200); s.logoW = Math.max(20, +$('#setLogoW').value || 90);
+    s.maxPx = Math.max(200, +$('#setMaxPx').value || 1200); s.imgMode = $('#setImgMode').value;
+    s.accordion = $('#setAccordion').checked; s.ss = $('#setSs').checked;
+    store.set('settings', s); update();
+  };
+  ['#setImgW', '#setLogoW', '#setMaxPx', '#setImgMode', '#setAccordion', '#setSs'].forEach((id) => $(id).addEventListener('change', saveS));
+
+  document.querySelectorAll('.tabs button').forEach((b) => b.onclick = () => {
+    document.querySelectorAll('.tabs button').forEach((x) => x.classList.toggle('active', x === b));
+    $('#preview').classList.toggle('hidden', b.dataset.tab !== 'preview');
+    $('#code').classList.toggle('hidden', b.dataset.tab !== 'code');
+  });
+  $('#copyHtml').onclick = () => { doUpdate(); copyText($('#code').value, 'HTML-Code kopiert – in ServiceNow im Quellcode-Fenster (<>) einfügen'); };
+  $('#copyRich').onclick = async () => {
+    doUpdate();
+    const html = $('#code').value;
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }), 'text/plain': new Blob([html], { type: 'text/plain' }) })]);
+      toast('Formatiert kopiert – direkt im ServiceNow-Editor einfügen');
+    } catch (e) {
+      const d = document.createElement('div'); d.contentEditable = 'true'; d.innerHTML = html; d.style.position = 'fixed'; d.style.left = '-9999px';
+      document.body.appendChild(d); const rg = document.createRange(); rg.selectNodeContents(d);
+      const sel = getSelection(); sel.removeAllRanges(); sel.addRange(rg); document.execCommand('copy'); sel.removeAllRanges(); d.remove();
+      toast('Formatiert kopiert');
+    }
+  };
+  $('#saveHtml').onclick = () => { doUpdate(); download(new Blob([$('#code').value], { type: 'text/html' }), (state.title || 'kb-artikel').replace(/[\\/:*?"<>|]+/g, '_') + '.html'); };
+  $('#dlImages').onclick = () => {
+    let n = 0;
+    const list = [];
+    SECTION_KEYS.forEach((k) => state.sections[k].rows.forEach((r) => { if (r.img) { n++; if (/^data:/.test(r.img)) list.push([r.img, imgName(n, r.img)]); } }));
+    if (!list.length) return toast('Keine eingebetteten Bilder vorhanden');
+    list.forEach(([src, name], i) => setTimeout(() => { const a = document.createElement('a'); a.href = src; a.download = name; document.body.appendChild(a); a.click(); a.remove(); }, i * 300));
+    toast(`${list.length} Bild(er) werden heruntergeladen`);
+  };
+}
+function copyText(t, msg) {
+  const fallback = () => { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); };
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).catch(fallback); else fallback();
+  toast(msg);
+}
+function download(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); }
+
+bind();
+renderEditor();
+update();
+</script>
+</body>
+</html>
